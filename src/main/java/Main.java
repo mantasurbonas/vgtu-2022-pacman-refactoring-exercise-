@@ -1,6 +1,20 @@
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
+	
+	static class Pacman{
+		int X;
+		int Y;
+	}
+	
+	static class Ghost{
+		int X;
+		int Y;
+		int Dx;
+		int Dy;
+	}
 	
 	public static void main(String a[]) throws IOException {
 		
@@ -36,19 +50,31 @@ public class Main {
 				{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 			};
 
-		int pacmanX = 5;
-		int pacmanY = 5;
+		Pacman pacman = new Pacman();
+		pacman.X = 5;
+		pacman.Y = 5;
 
-		int ghostX = 6;
-		int ghostY = 7;
-		int ghostDx = -1;
-		int ghostDy = 0;
+		Ghost ghost1 = new Ghost();
+		ghost1.X = 6;
+		ghost1.Y = 7;
+		ghost1.Dx = -1;
+		ghost1.Dy = 0;
+		
+		Ghost ghost2 = new Ghost();
+		ghost2.X = 10;
+		ghost2.Y = 17;
+		ghost2.Dx = 0;
+		ghost2.Dy = 1;
+		
+		List<Ghost> ghosts = new ArrayList<>();
+		ghosts.add(ghost1);
+		ghosts.add(ghost2);		
 		
 		boolean gameOver = false;
 		
 		while(gameOver == false) {
 		
-			renderGame(maze, pacmanX, pacmanY, ghostX, ghostY);
+			renderGame(maze, pacman, ghosts);
 			
 			byte userInput = readUserInput();
 			
@@ -57,46 +83,59 @@ public class Main {
 					gameOver = true;
 					break;
 				case 'a':
-					if (isWall(maze, pacmanX-1, pacmanY) == false)
-						pacmanX -= 1;
+					if (isWall(maze, pacman.X-1, pacman.Y) == false)
+						pacman.X -= 1;
 					break;
 				case 'd':
-					if (isWall(maze, pacmanX+1, pacmanY) == false)
-						pacmanX += 1;
+					if (isWall(maze, pacman.X+1, pacman.Y) == false)
+						pacman.X += 1;
 					break;
 				case 'w':
-					if (isWall(maze, pacmanX, pacmanY-1) == false)
-						pacmanY -= 1;
+					if (isWall(maze, pacman.X, pacman.Y-1) == false)
+						pacman.Y -= 1;
 					break;
 				case 's': 
-					if (isWall(maze, pacmanX, pacmanY+1) == false)
-						pacmanY += 1;
+					if (isWall(maze, pacman.X, pacman.Y+1) == false)
+						pacman.Y += 1;
 					break;
 			}
 			
-			if (pacmanX == ghostX && pacmanY == ghostY)
-				gameOver = true;
+			for (Ghost ghost: ghosts)
+				if (pacman.X == ghost.X && pacman.Y == ghost.Y)
+					gameOver = true;
 			
-			if (isWall(maze, ghostX + ghostDx, ghostY + ghostDy)) {
-				int temp = ghostDx;
-				ghostDx = - ghostDy;
-				ghostDy = temp;
-			} else {
-				ghostX = ghostX + ghostDx;
-				ghostY = ghostY + ghostDy;
-			}
+			for (Ghost ghost: ghosts)
+				if (hitWall(maze, ghost))
+					changeDirection(ghost);
+				else
+					moveForward(ghost);
 			
-			eatCookie(maze, pacmanX, pacmanY);			
+			eatCookie(maze, pacman);			
 		}
 		
+	}
+
+	private static void moveForward(Ghost ghost) {
+		ghost.X = ghost.X + ghost.Dx;
+		ghost.Y = ghost.Y + ghost.Dy;
+	}
+
+	private static void changeDirection(Main.Ghost ghost) {
+		int temp = ghost.Dx;
+		ghost.Dx = - ghost.Dy;
+		ghost.Dy = temp;
+	}
+
+	private static boolean hitWall(int[][] maze, Ghost ghost) {
+		return isWall(maze, ghost.X + ghost.Dx, ghost.Y + ghost.Dy);
 	}
 
 	private static boolean isWall(int[][] maze, int x, int y) {
 		return maze[y][x] == 1;
 	}
 	
-	private static void eatCookie(int[][] maze, int pacmanX, int pacmanY) {
-		maze[pacmanY][pacmanX] = 0;
+	private static void eatCookie(int[][] maze, Pacman pacman) {
+		maze[pacman.Y][pacman.X] = 0;
 	}
 
 	private static byte readUserInput() throws IOException {
@@ -106,13 +145,13 @@ public class Main {
 		return userInput;
 	}
 
-	private static void renderGame(int[][] maze, int pacmanX, int pacmanY, int ghostX, int ghostY) {
+	private static void renderGame(int[][] maze, Pacman pacman, List<Ghost> ghosts) {
 		for (int y=0; y<maze.length; y++) {
 			for (int x=0; x<maze[0].length; x++) {
-				if (y == pacmanY && x == pacmanX)
+				if (y == pacman.Y && x == pacman.X)
 					System.out.print("C");
 				else
-				if (y == ghostY && x == ghostX)
+				if (isGhost(x, y, ghosts))
 					System.out.print("@");
 				else
 				if (maze[y][x]==1)
@@ -125,6 +164,14 @@ public class Main {
 			}
 			System.out.println();
 		}
+	}
+
+	private static boolean isGhost(int x, int y, List<Ghost> ghosts) {
+		for (Ghost ghost: ghosts)
+			if (ghost.X == x && ghost.Y == y)
+				return true;
+		
+		return false;
 	}
 	
 }
