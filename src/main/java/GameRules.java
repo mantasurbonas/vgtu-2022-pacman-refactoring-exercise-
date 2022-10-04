@@ -36,7 +36,7 @@ public class GameRules {
 		eatCookie();
 	}
 
-	public void processUserInput(byte userInput) {
+	public void processUserInput(int userInput) {
 		switch(userInput) {
 		case 'q':
 			gameOver = true;
