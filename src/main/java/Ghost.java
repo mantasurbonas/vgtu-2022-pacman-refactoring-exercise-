@@ -6,10 +6,10 @@ public class Ghost {
 	int dy;
 
 	public Ghost(int x, int y, int dx, int dy) {
-		this.x = 6;
-		this.y = 7;
-		this.dx = -1;
-		this.dy = 0;
+		this.x = x;
+		this.y = y;
+		this.dx = dx;
+		this.dy = dy;
 
 	}
 
